@@ -16,6 +16,23 @@ shinyServer(function(input, output) {
   output$inicio_textbox <- renderText({
     "Descripción"
   })
+  
+  #Imagen 
+  output$logo_imagen <- renderImage({
+    list(
+      src = "GrupoTesoroLogo.png",
+      contentType = "image/png",
+      width = "auto",
+      height = "100"
+    )
+  }, deleteFile = FALSE)
+  
+  output$texto_encabezado <- renderText({
+    "Grupo Tesorooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"  
+  })
+  
+
+  
   ### Justificacion ------------------------------------------------------------
   # Cuadro informativo para seccion de Justificacion
   output$justificacion_textbox <- renderText({

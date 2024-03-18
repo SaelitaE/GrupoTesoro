@@ -12,10 +12,23 @@
 fluidPage(
   ## CSS -------------------------------------------------------------------------
   includeCSS("style.scss"),
+  # Dashboard title ------------------------------------------------------------
+  fluidRow(
+    box(
+      width = 12,
+      height = 100,
+      imageOutput(
+        outputId = "logo_imagen"
+      )
+   ) 
+  ),
   ## Inicializar dashboard -------------------------------------------------------
   dashboardPage(
+    
     ## Header dashboard ------------------------------------------------------------
-    dashboardHeader(title = paste0(Sys.Date())),
+    dashboardHeader(title = paste0(Sys.Date())
+                    ),
+
     ## Sidebar dashboard -----------------------------------------------------------
     dashboardSidebar(
       sidebarMenu(
