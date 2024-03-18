@@ -69,7 +69,13 @@ fluidPage(
         #Imagen
         fluidRow(
           box( width = 8,
-               imageOutput(outputId = "Imagen")))),
+               imageOutput(outputId = "Imagen")),
+        
+        # Descripción equipo
+          box( width = 4, 
+              uiOutput(outputId = "Descripcion_equipo"))
+        )),
+        
         ### Justificacion ------------------------------------------------------
         tabItem(tabName = "justificacion",
                 fluidRow(

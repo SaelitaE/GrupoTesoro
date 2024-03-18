@@ -39,6 +39,14 @@ shinyServer(function(input, output) {
          width = "100%",
          heigth = "100%"
     )})
+  
+  output$Descripcion_equipo <- renderUI({
+    HTML(paste("Pamela Burgos - Chile",
+    "Shaily Escobar - Guatemala",
+    "Rodrigo Martinez - Paraguay",
+    "Alfredo Zatarain - México",sep = "<br/>"))
+  }
+  )
 
   ### Justificacion ------------------------------------------------------------
   # Cuadro informativo para seccion de Justificacion
