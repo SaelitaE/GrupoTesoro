@@ -16,6 +16,7 @@ shinyServer(function(input, output) {
   output$inicio_textbox <- renderText({
     "Descripción"
   })
+<<<<<<< Updated upstream
   
   #Imagen 
   output$logo_imagen <- renderImage({
@@ -33,6 +34,15 @@ shinyServer(function(input, output) {
   
 
   
+=======
+  #Imagen módulo de inicio
+  output$Imagen <- renderImage({
+    list(src = "a.png",
+         contenType = "image/png",
+         width = "100%",
+         heigth = "100%"
+    )})
+>>>>>>> Stashed changes
   ### Justificacion ------------------------------------------------------------
   # Cuadro informativo para seccion de Justificacion
   output$justificacion_textbox <- renderText({
@@ -49,3 +59,4 @@ shinyServer(function(input, output) {
     "Descripción"
   })
 })
+  
