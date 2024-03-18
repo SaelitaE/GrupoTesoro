@@ -14,9 +14,9 @@ shinyServer(function(input, output) {
   ### Inicio -------------------------------------------------------------------
   # Cuadro informativo para seccion de Inicio
   output$inicio_textbox <- renderText({
-    "Descripción"
+    "El equipo tesoro esta integrado por los paises de Mexico, Guatemala, Chile, Paraguay, y se encargan de analizar las coberturas de vacunación de los paises de Centroamerica"
   })
-<<<<<<< Updated upstream
+
   
   #Imagen 
   output$logo_imagen <- renderImage({
@@ -28,13 +28,10 @@ shinyServer(function(input, output) {
     )
   }, deleteFile = FALSE)
   
-  output$texto_encabezado <- renderText({
-    "Grupo Tesorooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"  
-  })
-  
+ 
 
   
-=======
+
   #Imagen módulo de inicio
   output$Imagen <- renderImage({
     list(src = "a.png",
@@ -42,7 +39,7 @@ shinyServer(function(input, output) {
          width = "100%",
          heigth = "100%"
     )})
->>>>>>> Stashed changes
+
   ### Justificacion ------------------------------------------------------------
   # Cuadro informativo para seccion de Justificacion
   output$justificacion_textbox <- renderText({
