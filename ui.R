@@ -83,7 +83,16 @@ fluidPage(
                     width = 12,
                     title = "Justificacion",
                     textOutput(outputId = "justificacion_textbox"))
-                )),
+                ),
+                box(
+                  width = 6,
+                  plotOutput (outputId = "grafica_susc")
+                ),
+                box(
+                  width = 6,
+                  dataTableOutput (outputId = "tabla_susc")
+                )
+                ),
         ### Avance de campaña --------------------------------------------------
         tabItem(tabName = "avance_campana",
                 fluidRow(

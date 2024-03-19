@@ -51,8 +51,29 @@ shinyServer(function(input, output) {
   ### Justificacion ------------------------------------------------------------
   # Cuadro informativo para seccion de Justificacion
   output$justificacion_textbox <- renderText({
-    "Descripción"
+    "TExto de la justificación"
   })
+  
+  output$grafica_susc <- renderPlot({
+    
+    grafica <- ggplot(data = tabla_final, 
+                      aes(x = ano_nac,
+                          y = susceptibles_acumulado)
+                      
+    ) +
+      geom_bar(stat = "identity",
+               fill = "skyblue"
+               ) +
+      theme_bw()
+    
+    grafica
+    
+  })
+  
+  output$tabla_susc <- renderDataTable({
+    datatable(tabla_final, class = "compact")
+  })
+  
   ### Avance de campaña --------------------------------------------------------
   # Cuadro informativo para seccion de Avance de campaña
   output$avance_campana_textbox <- renderText({
