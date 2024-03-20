@@ -18,77 +18,80 @@ rnve_original <- rio::import("./data/RNVE.csv")
 registro_civil <- registro_civil_original %>%
   filter(year(fecha_nac) <= year(today()) - 1)
 
-rnve <- rnve_original %>% filter(fecha_vac <= today())
+rnve <- rnve_original %>% 
+  filter(fecha_vac <= today()) %>% 
+  select(ID, nombre, apellido, fecha_nac, dosis, fecha_vac, municipio_res_mad) %>% 
+  rename(municipio = municipio_res_mad)
 
 rc <- registro_civil %>% 
-  select(ID, nombre, apellido, fecha_nac)
+  select(ID, nombre, apellido, fecha_nac,cod_municipio, municipio_res_mad)
 
-rnve_2 <- rnve %>% 
-  select(ID, nombre, apellido, fecha_nac, dosis, fecha_vac, municipio_res_mad)
+#rm(registro_civil_original)
+#rm(rnve_original)
 
+rc_rnve <- rc %>% 
+  left_join(rnve, by = c("ID", "nombre", "apellido", "fecha_nac")) 
 
+# Encuentra la población por año de nacimiento  --------------------------------------------------------------
 
-rc_rnve <- rc %>%
-  left_join(rnve_2, by = c("ID", "nombre", "apellido", "fecha_nac")) %>%
-  pivot_wider(
-    id_cols = c(ID, nombre, apellido, fecha_nac),
-    names_from = "dosis",
-    # Esta es la columna que contiene la fecha de vacunación, para cada dosis
-    values_from = "fecha_vac") %>% 
-  # Eliminar columna NA
-  select(-`NA`) %>% 
-  mutate(Completo = if_all(5, ~ !is.na(.x))) %>% 
-  # Obtener año de nacimiento para asignar a cada persona a una cohorte.
-  mutate(ano_nac = year(fecha_nac)) %>% 
-  # Agrupamos por ano_nac y la variable esquema completo
-  group_by(ano_nac, Completo)%>% 
-  # Contamos. 
-  tally() %>% 
-  pivot_wider(
-    # Estas son las columnas que no vamos a mover
-    id_cols = c(ano_nac),
-    # Esta es la columna que contiene el estado de esquema completo
-    names_from = "Completo",
-    # Esta es la columna que contiene el número de personas en cada grupo
-    values_from = "n") %>% 
-  # Renombrar variables
-  rename(SPR1 = `TRUE`,
-         no_SPR1 = `FALSE`) 
-
-
-susceptibles <- rc_rnve %>% 
-  filter( ano_nac >= 2018 & ano_nac <= 2022) %>% 
-  mutate(No_vacunados = no_SPR1) %>% 
-  mutate(falla_primaria = round(SPR1* 0.05, 0)) %>% 
-  replace(is.na(.), 0) %>% 
-  mutate(total_susc = No_vacunados + falla_primaria) %>% 
-  ungroup() %>% 
-  arrange(ano_nac) %>% 
-  mutate(susceptibles_acumulado = cumsum (total_susc))
-
-
-pop_LT1_rn <- registro_civil %>% 
+pop_rc <- registro_civil %>% 
   mutate(ano = lubridate::year(fecha_nac)) %>% 
   group_by(ano) %>% 
   tally() %>% 
-  mutate(ano_nac = ano+1) %>% 
-  filter(ano_nac >= 2018 & ano_nac <= 2022) %>% 
-  mutate(Poblacion = n)
+  mutate(anio = ano+1) %>% 
+  filter(anio >= 2018 & anio <= 2022) %>% 
+  rename(poblacion = n) 
+
+# Susceptibles por año (año de nacimiento del niñ@) --------------------------------------------------------------
+
+susc_anio <- rc_rnve %>%
+  pivot_wider(
+    id_cols = c(ID, nombre, apellido, fecha_nac),
+    names_from = "dosis",
+    values_from = "fecha_vac") %>%
+  select(-`NA`) %>%
+  mutate(SPR1 = if_all(5, ~ !is.na(.x))) %>%
+  mutate(anio_nac = year(fecha_nac)) %>%
+  group_by(anio_nac, SPR1)%>%
+  tally() %>%
+  pivot_wider(
+    id_cols = c(anio_nac),
+    names_from = "SPR1",
+    values_from = "n") %>%
+  rename(SPR1 = `TRUE`,
+         no_inmunizado = `FALSE`) %>% 
+  filter (anio_nac >= 2018 & anio_nac <=2022) %>% 
+  rename(anio = anio_nac ) %>% 
+  mutate(total_susc = no_inmunizado +round(SPR1*0.05,0)) %>% 
+  ungroup() %>% 
+  arrange(anio) %>% 
+  mutate(susceptibles_acumulado = cumsum (total_susc)) %>% 
+  left_join(., pop_rc, by =  c ("anio")) %>% 
+  select(anio, poblacion, SPR1, no_inmunizado, total_susc,  susceptibles_acumulado )
 
 
-tabla_final <- susceptibles %>% 
-  left_join(., pop_LT1_rn, by =  c ("ano_nac")) %>% 
-  select(ano_nac, Poblacion, total_susc,  susceptibles_acumulado )
 
 
+# Susceptibles por año y municipio (año de nacimiento del niñ@) --------------------------------------------------------------
 
-##  Por municipio -----------------------------------------
-# primeras dosis administradas por municipio (todos los años)
-rc_rnve_mun_SPR1 <- rc %>%
-  left_join(rnve_2, by = c("ID", "nombre", "apellido", "fecha_nac")) %>% 
-  filter(dosis == "Primera") %>% 
-  group_by(anomunicipio_res_mad) %>% 
-  tally()
-  
 
-  
+susc_anio_mun <- rc_rnve %>%
+  pivot_wider(
+    id_cols = c(ID, nombre, apellido, fecha_nac, municipio_res_mad),
+    names_from = "dosis",
+    values_from = "fecha_vac") %>% 
+  select(-`NA`) %>%
+  mutate(SPR1 = if_all(6, ~ !is.na(.x))) %>%
+  mutate(anio_nac = year(fecha_nac)) %>%
+  group_by(anio_nac, municipio_res_mad, SPR1)%>%
+  tally() %>%
+  pivot_wider(
+    id_cols = c(anio_nac,municipio_res_mad),
+    names_from = "SPR1",
+    values_from = "n") %>%
+  rename(SPR1 = `TRUE`,
+         no_inmunizado = `FALSE`) %>% 
+  filter (anio_nac >= 2018 & anio_nac <=2022) %>% 
+  rename(anio = anio_nac ) %>% 
+  mutate(total_susc = no_inmunizado +round(SPR1*0.05,0))
+

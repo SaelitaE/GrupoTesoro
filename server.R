@@ -56,22 +56,27 @@ shinyServer(function(input, output) {
   
   output$grafica_susc <- renderPlot({
     
-    grafica <- ggplot(data = tabla_final, 
-                      aes(x = ano_nac,
+    grafica <- ggplot(data = susc_anio, 
+                      aes(x = anio,
                           y = susceptibles_acumulado)
                       
-    ) +
-      geom_bar(stat = "identity",
-               fill = "skyblue"
-               ) +
-      theme_bw()
+    )
     
-    grafica
+    grafica <-  grafica +
+      geom_bar(stat = "identity",
+               fill = "#253494"
+               )+
+      theme_classic()+
+          labs(x = "Año",
+           y = "Cantidad de susceptibles"
+      )
+    
+   grafica
     
   })
   
   output$tabla_susc <- renderDataTable({
-    datatable(tabla_final, class = "compact")
+    datatable(susc_anio, class = "compact")
   })
   
   ### Avance de campaña --------------------------------------------------------

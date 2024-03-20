@@ -22,5 +22,6 @@ pacman::p_load(
   rio,
   ggplot2,
   bench,
-  DT
+  DT,
+  plotly
 )
