@@ -34,6 +34,7 @@ rc_rnve <- rc %>%
 
 # Encuentra la población por año de nacimiento  --------------------------------------------------------------
 
+#por año de nacimiento
 pop_rc <- registro_civil %>% 
   mutate(ano = lubridate::year(fecha_nac)) %>% 
   group_by(ano) %>% 
@@ -41,6 +42,17 @@ pop_rc <- registro_civil %>%
   mutate(anio = ano+1) %>% 
   filter(anio >= 2018 & anio <= 2022) %>% 
   rename(poblacion = n) 
+
+#Por municipio
+
+pop_rc_mun <- registro_civil %>% 
+  mutate(ano = lubridate::year(fecha_nac)) %>% 
+  group_by(ano, municipio_res_mad) %>% 
+  tally() %>% 
+  mutate(anio = ano+1) %>% 
+  filter(anio >= 2018 & anio <= 2022) %>% 
+  rename(poblacion = n) 
+
 
 # Susceptibles por año (año de nacimiento del niñ@) --------------------------------------------------------------
 
@@ -95,3 +107,56 @@ susc_anio_mun <- rc_rnve %>%
   rename(anio = anio_nac ) %>% 
   mutate(total_susc = no_inmunizado +round(SPR1*0.05,0))
 
+
+
+# Calculos de cobertura por municipio (avance diario)- ----------------------------
+
+fecha_campana <- as.Date("2024-03-04", "%Y-%m-%d")
+fecha_edad_minima <- fecha_campana %m-% months(12)
+fecha_edad_maxima <- fecha_campana %m-% months(12 * 5) - 1
+
+# Población objetivo
+pop_campana_adm1 <- registro_civil_original %>% 
+  filter(fecha_nac <= fecha_edad_minima) %>% 
+  filter(fecha_nac >= fecha_edad_maxima) %>% 
+  group_by(departamento_res_mad) %>% 
+  tally(name = "poblacion") 
+
+# Cobertura
+campana_departamento <- rnve_original %>% 
+  left_join(., registro_civil_original, by = c("ID", "nombre", "apellido", "fecha_nac")) %>% 
+  filter(dosis == "Campaña") %>% 
+  group_by(fecha_vac, departamento_res_mad) %>% 
+  summarise(
+    vacunados = n()
+  ) %>%
+  left_join(., pop_campana_adm1, by = "departamento_res_mad") %>% 
+  mutate(cobertura = round((vacunados / poblacion * 100),1))
+
+campana_nacional_dia <- campana_departamento %>% 
+  group_by(fecha_vac) %>% 
+  summarise(
+    vacunados = sum(vacunados)
+  )
+
+poblacion_nacional <- sum(pop_campana_adm1$poblacion)
+
+cobertura_nacional_dia <- campana_nacional_dia %>% 
+mutate(poblacion = poblacion_nacional) %>% 
+  mutate(cobertura = round(vacunados/poblacion_nacional*100,1)) %>% 
+  ungroup() %>% 
+  arrange(fecha_vac) %>% 
+  mutate(vacunados_acumulados = cumsum(vacunados)) %>% 
+  mutate(cobertura_acumulada = round(vacunados_acumulados/poblacion_nacional*100,1)) %>% 
+  select (fecha_vac, cobertura_acumulada)
+
+tabla_grafica <- campana_nacional_dia %>% 
+  left_join(., cobertura_nacional_dia, by = c("fecha_vac"))
+
+
+# Cobertura acumulada por depto
+
+# tabla_grafica_depto <-campana_departamento %>% 
+#   group_by(departamento_res_mad) %>% 
+#   arrange(fecha_vac) %>% 
+#   mutate(cobertura_acumulada = cumsum(cobertura))

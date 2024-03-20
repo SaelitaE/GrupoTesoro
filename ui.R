@@ -100,7 +100,23 @@ fluidPage(
                     width = 12,
                     title = "Avance de Campaña",
                     textOutput(outputId = "avance_campana_textbox")  
-                  )
+                  ),
+                  box(
+                    width = 6,
+                    title = "Cobertura Nacional",
+                    plotlyOutput(outputId = "grafica_nacional")
+                  ),
+                  box(
+                    width = 6,
+                    selectInput(#selector
+                      inputId = "selector_departamento",
+                      label = "Departamento",
+                      choices = unique(campana_departamento$departamento_res_mad)
+                    ),
+                    plotlyOutput(
+                      outputId = "grafica_departamento"
+                    )
+                  ) 
                 )),
         ### Georreferenciación -------------------------------------------------
         tabItem(tabName = "georreferenciacion",
