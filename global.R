@@ -43,6 +43,16 @@ pop_rc <- registro_civil %>%
   filter(anio >= 2018 & anio <= 2022) %>% 
   rename(poblacion = n) 
 
+#Población 2023
+pop_rc2 <- registro_civil %>% 
+  mutate(ano = lubridate::year(fecha_nac)) %>% 
+  group_by(ano) %>% 
+  tally() %>% 
+  mutate(anio = ano+1) %>% 
+  #filter(anio >= 2018 & anio <= 2022) %>% 
+  rename(poblacion = n) 
+
+
 #Por municipio
 
 pop_rc_mun <- registro_civil %>% 
@@ -215,4 +225,12 @@ datos_map <- datos_map %>%
   st_as_sf()
 
 
+
+# vacunados sin residencia
+
+# Vac_sin_res <- datos_map %>% 
+#   group_by(ADM) %>% 
+#   summarise(
+#     vacunados = n()
+#   )
 
