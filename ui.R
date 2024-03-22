@@ -102,12 +102,12 @@ fluidPage(
                     textOutput(outputId = "avance_campana_textbox")  
                   ),
                   box(
-                    width = 6,
+                    width = 6, 
                     title = "Cobertura Nacional",
                     plotlyOutput(outputId = "grafica_nacional")
                   ),
                   box(
-                    width = 6,
+                    width = 6, 
                     selectInput(#selector
                       inputId = "selector_departamento",
                       label = "Departamento",
@@ -125,6 +125,24 @@ fluidPage(
                     width = 12,
                     title = "Georreferenciación",
                     textOutput(outputId = "georreferenciacion_textbox")
+                  ),
+                  box(
+                    width = 12, 
+                    title ="Mapa avance campaña",
+                    selectInput(#selector
+                      inputId = "selector_cobertura",
+                      label = "Rango de cobertura",
+                      choices = c("<=20%", 
+                                  "20% - 40%",
+                                  "40% - 60%", 
+                                  "60% - 80%", 
+                                  "> 80%"),
+                      selected = "40% - 60%"
+                    ),
+                    leafletOutput(
+                      outputId = "mapa"
+                    )
+                    
                   )
                 ))
       )

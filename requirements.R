@@ -23,5 +23,9 @@ pacman::p_load(
   ggplot2,
   bench,
   DT,
-  plotly
+  plotly,
+  leaflet,
+  leaflet.extras,
+  esquisse,
+  sf
 )

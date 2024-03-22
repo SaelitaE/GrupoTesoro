@@ -107,6 +107,11 @@ susc_anio_mun <- rc_rnve %>%
   rename(anio = anio_nac ) %>% 
   mutate(total_susc = no_inmunizado +round(SPR1*0.05,0))
 
+# Población por año y Departamento: 
+susc_anio_mun <- susc_anio_mun %>% 
+  left_join(.,pop_rc_mun, by = c("municipio_res_mad","anio")) %>% 
+  select(anio, municipio_res_mad, poblacion, total_susc)
+
 
 
 # Calculos de cobertura por municipio (avance diario)- ----------------------------
@@ -156,7 +161,58 @@ tabla_grafica <- campana_nacional_dia %>%
 
 # Cobertura acumulada por depto
 
-# tabla_grafica_depto <-campana_departamento %>% 
-#   group_by(departamento_res_mad) %>% 
-#   arrange(fecha_vac) %>% 
-#   mutate(cobertura_acumulada = cumsum(cobertura))
+tabla_grafica_depto <-campana_departamento %>%
+  group_by(departamento_res_mad) %>%
+  arrange(fecha_vac) %>%
+  mutate(cobertura_acumulada = cumsum(cobertura))
+
+
+# Carga de datos para mapa -----------------------------------------------
+
+mun <- read_sf("data\\Anterior_URYMixed\\URY_ADM2_Anterior.shp")
+
+grafica_mapa <- ggplot()+
+  geom_sf(data = mun)
+
+pop_campana_adm2 <- registro_civil_original %>% 
+  filter(fecha_nac <= fecha_edad_minima) %>% 
+  filter(fecha_nac >= fecha_edad_maxima) %>% 
+  group_by(cod_municipio, municipio_res_mad) %>% 
+  tally(name = "total_pob") %>%
+  rename(GIS_CODE = cod_municipio)
+
+poblacion <- pop_campana_adm2 %>% 
+  full_join(., mun, by = c("GIS_CODE")) %>% 
+  rename(municipio = municipio_res_mad)
+
+
+vacunados <- rnve %>% 
+  filter(dosis == "Campaña") %>% 
+  select(municipio) %>% 
+  group_by(municipio) %>% 
+  summarise(total_vac = n())
+
+datos_map <- full_join(poblacion, vacunados, by = "municipio") %>%
+  mutate(cobertura = round(total_vac/total_pob  * 100,1)) %>% 
+  mutate(no_vacunados = total_pob-total_vac)
+
+
+## Creacion de variables en el shp ####
+datos_map <- datos_map %>% 
+  mutate(rango_cob = case_when(cobertura <= 20 ~ "<=20%", 
+                               cobertura > 20  & cobertura <= 40  ~ "20% - 40%",
+                               cobertura > 40  & cobertura <= 60  ~ "40% - 60%", 
+                               cobertura > 60  & cobertura <= 80  ~ "60% - 80%", 
+                               cobertura > 80 ~ "> 80%", 
+                               TRUE ~ "Sin Dato"),
+         rango_cob = factor(rango_cob, levels = c("<=20%", 
+                                                  "20% - 40%",
+                                                  "40% - 60%",
+                                                  "60% - 80%",
+                                                  "> 80%",
+                                                  "Sin Dato")) 
+        ) %>% 
+  st_as_sf()
+
+
+
